@@ -71,8 +71,8 @@ async def main(user_text: str, session_id: str):
                 
                 final_payload_prompt = COLLECTION_PROMPT.format(
                     current_payload=current_payload,
+                    session_id=session_id,
                     chat_history=history_str,
-                    user_message=user_text
                 )
 
                 response = client.chat.completions.create(
@@ -86,21 +86,27 @@ async def main(user_text: str, session_id: str):
                 )
 
                 ai_message = response.choices[0].message
-                
+                print(ai_message)
                 # 4. Execute Tool if LLM requested it
                 if ai_message.tool_calls:
                     for tool_call in ai_message.tool_calls:
-                        f_name = tool_call.function.name
-                        f_args = tool_call.function.arguments
-                        
-                        print(f"🛠️ Calling MCP Tool: {f_name} with {f_args}") 
-                        return
-                        # ACTUAL MCP CALL
-                        result = await session.call_tool(f_name, arguments=f_args)
-                        
-                        # Update your local state so the next loop knows info is filled
-                        current_payload.update(f_args)
-                        sm.set(session_id, current_payload)
+                        args = json.loads(tool_call.function.arguments)
+                        if "new_data" not in args:
+                            # Gather all keys except session_id and put them in new_data
+                            actual_data = {k: v for k, v in args.items() if k != "session_id"}
+                            args = {
+                                "session_id": session_id,
+                                "new_data": actual_data
+                            }
+                        else:
+                            # Ensure the session_id is definitely correct
+                            args["session_id"] = session_id
+
+                    missing,state = await session.call_tool("add-or-update-payload", arguments=args) 
+                    print(state)
+                    
+                    # Update your local state so the next loop knows info is filled
+                    return
 
                 # 5. Output to User & Update History
                 final_text = ai_message.content or "Profile updated! What's next?"
