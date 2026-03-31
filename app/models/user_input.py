@@ -13,4 +13,5 @@ class NewData(BaseModel):
 
 class UserInput(BaseModel):
     session_id: str | None = None
+    message: str
     new_data: NewData

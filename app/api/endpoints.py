@@ -11,7 +11,9 @@ def home():
     return {"Message":"Welcome to home page of SPENDiD"}
 
 @router.post("/chat")
-def chat_endpoint(user_query : UserInput):
+async def chat_endpoint(user_query : UserInput):
     session_id = user_query.session_id or str(uuid4())
-    result = main(session_id, user_query.new_data.dict())
+    # update state with new_data if present, though main doesn't explicitly take new_data yet except maybe internally.
+    # main takes user_text and session_id
+    result = await main(user_query.message, session_id)
     return {"session_id": session_id, "result": result}
