@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPENDiD | Your Financial Mentor</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>SPENDiD</h1>
+                        <span class="logo-tagline">Smart Budgeting</span>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="main-nav">
+                <div class="nav-section">
+                    <span class="nav-label">Main</span>
+                    <div class="nav-item active">
+                        <div class="nav-icon">
+                            <i class="fas fa-comment-dots"></i>
+                        </div>
+                        <span>Chat</span>
+                        <div class="nav-badge">3</div>
+                    </div>
+                    <div class="nav-item">
+                        <div class="nav-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <span>Budget</span>
+                    </div>
+                    <div class="nav-item">
+                        <div class="nav-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <span>Goals</span>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <span class="nav-label">History</span>
+                    <div class="nav-item">
+                        <div class="nav-icon">
+                            <i class="fas fa-clock-rotate-left"></i>
+                        </div>
+                        <span>Recent</span>
+                    </div>
+                    <div class="nav-item">
+                        <div class="nav-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <span>Saved</span>
+                    </div>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">
+                        <span>U</span>
+                        <div class="avatar-status"></div>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Guest User</span>
+                        <span class="session-id">Session: <span id="session-display">...</span></span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Chat Panel -->
+            <section class="chat-section">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <div class="ai-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="chat-header-info">
+                            <h2>SPENDiD</h2>
+                            <div class="status-wrapper">
+                                <span class="status-dot"></span>
+                                <span class="status-text">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-header-actions">
+                        <button class="header-btn" id="clear-session" title="Reset Session">
+                            <i class="fas fa-rotate-right"></i>
+                        </button>
+                        <button class="header-btn" title="Settings">
+                            <i class="fas fa-ellipsis-vertical"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Welcome Message -->
+                    <div class="welcome-message">
+                        <div class="welcome-icon">
+                            <i class="fas fa-hand-sparkles"></i>
+                        </div>
+                        <h3>Welcome to SPENDiD!</h3>
+                        <p>I'm your personal financial mentor. I can help you create a budget, track expenses, and achieve your savings goals. Let's start by telling me a bit about yourself!</p>
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-message="I want to create a budget">
+                                <i class="fas fa-chart-line"></i>
+                                Create Budget
+                            </button>
+                            <button class="quick-action-btn" data-message="Help me save money">
+                                <i class="fas fa-piggy-bank"></i>
+                                Save Money
+                            </button>
+                            <button class="quick-action-btn" data-message="Track my expenses">
+                                <i class="fas fa-receipt"></i>
+                                Track Expenses
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-wrapper">
+                    <div class="input-hints">
+                        <span class="hint-text">Try asking:</span>
+                        <button class="hint-chip" data-message="My salary is $5000 per month">Set salary</button>
+                        <button class="hint-chip" data-message="I live in zipcode 10001">Set location</button>
+                        <button class="hint-chip" data-message="I'm 30 years old">Set age</button>
+                    </div>
+                    <form class="chat-input-area" id="chat-form">
+                        <div class="input-container">
+                            <button type="button" class="input-action-btn" title="Add attachment">
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
+                            <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+                            <button type="button" class="input-action-btn" title="Voice input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                        <button type="submit" id="send-btn" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Dashboard / Insights Panel -->
+            <section class="insights-section">
+                <div class="insights-header">
+                    <div class="insights-title">
+                        <h2>Your Financial Overview</h2>
+                        <span class="insights-subtitle">Real-time insights</span>
+                    </div>
+                    <div class="progress-container" id="profile-progress">
+                        <div class="progress-header">
+                            <span class="progress-text">Profile Completion</span>
+                            <span class="progress-percentage">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insights-content">
+                    <div id="no-data-hint" class="hint-card">
+                        <div class="hint-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h4>Get Started</h4>
+                        <p>Share your financial details to unlock personalized budget insights and recommendations.</p>
+                    </div>
+
+                    <div id="budget-data" class="budget-card hidden">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-column"></i>
+                            </div>
+                            <h3>Monthly Budget</h3>
+                        </div>
+                        <div id="category-list" class="category-list">
+                            <!-- Categories will be injected here -->
+                        </div>
+                        <div class="summary-stats">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="fas fa-sack-dollar"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-label">Potential Savings</span>
+                                    <span class="stat-value highlight" id="savings-val">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="profile-data" class="profile-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <h3>Profile Details</h3>
+                        </div>
+                        <ul class="profile-list" id="profile-details">
+                            <li data-field="zipcode">
+                                <div class="profile-field">
+                                    <i class="fas fa-location-dot"></i>
+                                    <span>Location</span>
+                                </div>
+                                <span class="val">---</span>
+                            </li>
+                            <li data-field="salary">
+                                <div class="profile-field">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>Salary</span>
+                                </div>
+                                <span class="val">---</span>
+                            </li>
+                            <li data-field="age">
+                                <div class="profile-field">
+                                    <i class="fas fa-cake-candles"></i>
+                                    <span>Age</span>
+                                </div>
+                                <span class="val">---</span>
+                            </li>
+                            <li data-field="has_house">
+                                <div class="profile-field">
+                                    <i class="fas fa-house"></i>
+                                    <span>Housing</span>
+                                </div>
+                                <span class="val">---</span>
+                            </li>
+                            <li data-field="past_credit_debt">
+                                <div class="profile-field">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Credit Debt</span>
+                                </div>
+                                <span class="val">---</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="tips-card">
+                        <div class="card-header">
+                            <div class="card-icon tips">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                            </div>
+                            <h3>Pro Tips</h3>
+                        </div>
+                        <div class="tips-list">
+                            <div class="tip-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Save at least 20% of your income</span>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Track expenses daily for better control</span>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Set specific, measurable financial goals</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>
