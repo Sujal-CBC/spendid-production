@@ -10,8 +10,9 @@ greeting, payload, generate, regenerate, update, or qa.
 **DECISION TREE (Follow STRICTLY in this exact order):**
 
 **STEP 0: Has the budget already been generated?**
-- Check if API_RESULTS contains 'budget_data' OR 'transformed' data (indicates budget was already created)
-- If budget exists → SKIP payload collection entirely
+- Check if API_RESULTS contains 'budget_data' OR 'transformed' data with actual budget categories (Housing, Food, Transportation, etc.)
+- Location verification data like `{{"location": "City, State", "zip_code": "12345"}}` is NOT budget data - it's just location lookup
+- If budget_data exists with actual budget categories → SKIP payload collection entirely
 - Allowed intents after budget: `greeting`, `qa`, `update`, `regenerate`, `generate` (for refresh)
 - NEVER output `payload` after budget is generated
 - If NO budget yet → Continue to STEP 1
@@ -240,6 +241,8 @@ Message: {user_message}
 
 **IMPORTANT:** 
 1. Use the conversation HISTORY to understand context. The user's message may be a response to a previous question (e.g., answering "do you own a house?" with "naaa not yet" means they don't own a house → payload intent).
-2. Check API_RESULTS - if it contains 'budget_data' or 'transformed' with budget info, the budget is ALREADY GENERATED. In this case, NEVER return `payload` intent.
+2. Check API_RESULTS - if it contains 'budget_data' or 'transformed' with actual budget categories (Housing, Food, etc.), the budget is ALREADY GENERATED. In this case, NEVER return `payload` intent.
+3. Location data like `{{"location": "City", "zip_code": "12345"}}` is NOT budget data - it's just location verification. Continue with normal payload collection if profile is incomplete.
 
-Output ONLY the intent word:"""
+Output ONLY the intent word:
+"""

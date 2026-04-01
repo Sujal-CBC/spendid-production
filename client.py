@@ -70,7 +70,8 @@ async def main_streaming(user_text: str, session_id: str):
             # 2. Handle Intent
             if "greeting" in intent:  
                 formated_prompt = GREETING_PROMPT.format(
-                    history = history_str
+                    history = history_str,
+                    current_payload = current_payload
                 ) 
                 response = client.chat.completions.create(
                     model="gpt-4o-mini", 
@@ -171,9 +172,11 @@ async def main_streaming(user_text: str, session_id: str):
                     maintain_history(session_id, user_text, "[processing]")
                     history_str = "\n".join(maintain_history.storage.get(session_id, []))
                     
-                    # Check if profile is now complete (next_fields is empty)
-                    next_fields = data.get("next_fields", [])
-                    if not next_fields or (isinstance(next_fields, list) and len(next_fields) == 0):
+                    # Check if profile is now complete using actual state, not tool response
+                    from app.workflow.engine import WorkflowEngine
+                    workflow = WorkflowEngine()
+                    complete, next_fields = workflow.sm.is_complete(session_id)
+                    if complete:
                         # Profile complete - budget was just generated, use summary prompt
                         format_response = BUDGET_SUMMARY_PROMPT.format(
                             state=updated_state, api_results=updated_state.get("api_results", {}),
