@@ -431,18 +431,13 @@ document.addEventListener('DOMContentLoaded', () => {
             valSpan.textContent = newValue;
         });
 
-        // Update Budget Highlights
-        if (state.api_results && state.api_results.transformed) {
+        // Update Budget Highlights - Use budget_data (user's updated budget)
+        const budgetSource = state.api_results?.budget_data || state.api_results;
+        if (budgetSource && budgetSource.transformed) {
             noDataHint.classList.add('hidden');
             budgetCard.classList.remove('hidden');
             
-            // Animate card appearance
-            budgetCard.style.opacity = '0';
-            budgetCard.style.transform = 'translateY(10px)';
-            
-            categoryList.innerHTML = '';
-            
-            const transformed = state.api_results.transformed;
+            const transformed = budgetSource.transformed;
             const topCategories = [
                 { key: 'Rent or Mortgage Payment', icon: 'fa-house' },
                 { key: 'Groceries', icon: 'fa-basket-shopping' },
@@ -451,30 +446,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 { key: 'Education', icon: 'fa-graduation-cap' }
             ];
             
+            // Get existing items
+            const existingItems = {};
+            categoryList.querySelectorAll('.category-item').forEach(item => {
+                const key = item.dataset.categoryKey;
+                if (key) existingItems[key] = item;
+            });
+            
             topCategories.forEach((cat, index) => {
                 if (transformed[cat.key] !== undefined) {
-                    const item = document.createElement('div');
-                    item.className = 'category-item';
-                    item.style.animationDelay = `${index * 0.1}s`;
-                    item.innerHTML = `
-                        <span><i class="fas ${cat.icon}" style="margin-right: 8px; color: var(--text-tertiary);"></i>${cat.key}</span>
-                        <strong>$${Number(transformed[cat.key]).toLocaleString()}</strong>
-                    `;
-                    categoryList.appendChild(item);
+                    const newValue = `$${Number(transformed[cat.key]).toLocaleString()}`;
+                    
+                    if (existingItems[cat.key]) {
+                        // Update existing item
+                        const item = existingItems[cat.key];
+                        const valueEl = item.querySelector('strong');
+                        const oldValue = valueEl.textContent;
+                        
+                        if (oldValue !== newValue) {
+                            // Highlight the change
+                            valueEl.style.color = 'var(--accent-emerald)';
+                            valueEl.textContent = newValue;
+                            setTimeout(() => {
+                                valueEl.style.color = '';
+                            }, 1000);
+                        }
+                    } else {
+                        // Create new item with animation
+                        const item = document.createElement('div');
+                        item.className = 'category-item fade-in';
+                        item.dataset.categoryKey = cat.key;
+                        item.innerHTML = `
+                            <span><i class="fas ${cat.icon}" style="margin-right: 8px; color: var(--text-tertiary);"></i>${cat.key}</span>
+                            <strong>${newValue}</strong>
+                        `;
+                        categoryList.appendChild(item);
+                    }
                 }
             });
 
-            if (state.api_results.budget && state.api_results.budget.savings) {
-                const savings = state.api_results.budget.savings;
-                animateValue(savingsVal, 0, savings, 1000, true);
+            // Get savings from the correct budget source
+            const budgetPayload = budgetSource.budget || {};
+            if (budgetPayload.savings !== undefined) {
+                const savings = budgetPayload.savings;
+                const currentSavings = parseInt(savingsVal.textContent.replace(/[$,]/g, '')) || 0;
+                if (currentSavings !== savings) {
+                    animateValue(savingsVal, currentSavings, savings, 1000, true);
+                }
             }
-            
-            // Fade in budget card
-            requestAnimationFrame(() => {
-                budgetCard.style.transition = 'all 0.5s ease';
-                budgetCard.style.opacity = '1';
-                budgetCard.style.transform = 'translateY(0)';
-            });
         }
     }
 

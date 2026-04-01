@@ -1,7 +1,8 @@
 # app/workflow/engine.py
 
 # this uses statemanger for updating state or verifing that we have collected all userinfo
-from app.workflow.engine import WorkflowEngine
+from app.workflow.engine import WorkflowEngine 
+from app.state.state_manager import StateManager
 from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv 
 import requests
@@ -12,7 +13,8 @@ mcp = FastMCP("Spendid-mcp")
 
 # core logic and real mcp starts from here
 
-workflow = WorkflowEngine()
+workflow = WorkflowEngine() 
+sm = StateManager()
 
 # for zipcode verification
 @mcp.tool(
@@ -27,11 +29,14 @@ def verify_location(session_id : str, city_or_zip : str | int) -> dict:
         zip = city_or_zip
     try:
         params = {"search": zip}
-        response = requests.get(BASE_URL, params=params)
+        url = f"{BASE_URL}search={params['search']}"
+        print(url)
+
+        response = requests.get(url)
+        print("response:", response)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
-        return {"error": True, "message": str(e)}
-    print(response, "api-response", file=sys.stderr)
+    print(response, "api-response", file=sys.stderr) 
     if response.status_code != 200:
         return {
             "error": True,
@@ -45,6 +50,10 @@ def verify_location(session_id : str, city_or_zip : str | int) -> dict:
             "message": f"No data found for {zip}"
         }
     plann = data["plans"][0]
+    params = {
+        "zipcode" : plann['zip_code']
+    } 
+    sm.update(session_id,params) 
     return {
         "location": plann["area_name"],
         "zip_code": plann["zip_code"]
@@ -91,7 +100,8 @@ def generate_budget(session_id: str) -> dict:
     if not complete:
         return {"error": True, "message": f"Payload incomplete. Missing: {missing}"}
     api_results = workflow.run_api_pipeline(state)
-    workflow.sm.update(session_id, {"api_results": api_results})
+    # Use overwrite to completely replace api_results (not merge)
+    workflow.sm.overwrite_api_results(session_id, api_results)
     return {"state": state, "api_results": api_results}
 
 # for updating specific lifestyle expenses
@@ -107,12 +117,14 @@ def update_budget_category(session_id: str, category: str, value: float) -> dict
         payload=state,
         accumulated_updates=state.get("api_results", {}).get("merged_updates", {})
     )
-    workflow.sm.update(session_id, {"api_results": res})
+    # Use overwrite to completely replace api_results (not merge)
+    workflow.sm.overwrite_api_results(session_id, res)
     return res
 
 
 
 
 if __name__ == "__main__": 
-    print("sever is running...") 
+    print("sever is running...")  
+    # verify_location("123","12345") 
     mcp.run()

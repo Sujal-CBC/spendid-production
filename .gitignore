@@ -8,4 +8,8 @@ test_flow.py
 test_fastmcp.py 
 test_mcp.py 
 test_mcp_server.py 
-.qoder
+.qoder 
+test_fix.py 
+test_intent_comprehensive.py 
+test_intent.py 
+test_intent_report.json 

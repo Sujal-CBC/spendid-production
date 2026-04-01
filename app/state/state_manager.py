@@ -51,6 +51,15 @@ class StateManager:
         self._save()
         return state
 
+    def overwrite_api_results(self, session_id: str, api_results: dict):
+        """Completely replace api_results with new data (not merge)"""
+        self._load()
+        state = self._get_raw(session_id)
+        state["api_results"] = api_results  # Full replacement, not merge
+        self.store[session_id] = state
+        self._save()
+        return state
+
     def is_complete(self, session_id: str):
         state = self.get(session_id)
         # Check core fields for completeness
