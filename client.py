@@ -126,16 +126,13 @@ async def main_streaming(user_text: str, session_id: str):
                 tool_name = tool_call.function.name
                 args['session_id'] = session_id
                 
-                # Special handling for location verification
-                # if tool_name == "verify-zipcode-or-city-name":
-                #     args["session_id"] = session_id 
-                #     content = await mcp_session.call_tool(tool_name, arguments=args) 
-                #     verify_data = json.loads(content.content[0].text)  
-                    # print(verify_data)
-                    # response = client.chat.completions.create(
-                    # )
-                    
-                
+                # Special handling for location verification 
+                verify_loc = None
+                if tool_name == "verify-zipcode-or-city-name":
+                    args["session_id"] = session_id 
+                    content = await mcp_session.call_tool(tool_name, arguments=args) 
+                    verify_loc = json.loads(content.content[0].text)  
+                    print("Verify data = ",verify_loc)
                 tool_res = await mcp_session.call_tool(tool_name, arguments=args)
                 data = json.loads(tool_res.content[0].text)
                 if "api_results" in data:
@@ -173,9 +170,7 @@ async def main_streaming(user_text: str, session_id: str):
                     history_str = "\n".join(maintain_history.storage.get(session_id, []))
                     
                     # Check if profile is now complete using actual state, not tool response
-                    from app.workflow.engine import WorkflowEngine
-                    workflow = WorkflowEngine()
-                    complete, next_fields = workflow.sm.is_complete(session_id)
+                    complete, next_fields = sm.is_complete(session_id)
                     if complete:
                         # Profile complete - budget was just generated, use summary prompt
                         format_response = BUDGET_SUMMARY_PROMPT.format(
@@ -184,9 +179,10 @@ async def main_streaming(user_text: str, session_id: str):
                         )
                     else:
                         # Still collecting data
+                        # print(verify_loc) 
                         format_response = RESPONSE_PROMPT.format(
                             state=updated_state, api_results=updated_state.get("api_results", {}),
-                            next_fields=next_fields, history=history_str
+                            next_fields=next_fields, history=history_str, data=verify_loc
                         ) 
                     stream = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": format_response}], stream=True)
                     

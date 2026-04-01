@@ -17,12 +17,13 @@ greeting, payload, generate, regenerate, update, or qa.
 - NEVER output `payload` after budget is generated
 - If NO budget yet → Continue to STEP 1
 
-**STEP 1: Is the message a greeting, asking about SPENDiD, OR completely off-topic/unrelated?**
-- Greetings: "Hi", "Hello", "Hey there", "Good morning", "Hey! 👋", "What's up", "Greetings", "Sup", "Howdy"
+**STEP 1: Is the message a simple response, greeting, asking about SPENDiD, OR completely off-topic/unrelated?**
+- Simple responses (after bot asks a question): "yes", "no", "okay", "sure", "yeah", "nah", "nope", "yep"
+- Greetings: "Hi", "Hello", "Hey there", "Good morning", "Hey!", "What's up", "Greetings", "Sup", "Howdy"
 - SPENDiD questions: "What is SPENDiD?", "How does SPENDiD work?", "Tell me about SPENDiD", "What can you do?", "Who are you?"
 - COMPLETELY off-topic (NOT about budgeting/finance at all): "Who is PM of India?", "Tell me a joke", "What's the weather?", "Who won the game?", "What's 2+2?", "Explain quantum physics", "Politics", "Sports", "Celebrities"
 - IMPORTANT: Questions about groceries, expenses, spending, budget ARE budget-related → NOT off-topic
-- If YES (greeting/SPENDiD/completely off-topic) → Output: `greeting` (STOP HERE)
+- If YES (simple response/greeting/SPENDiD/completely off-topic) → Output: `greeting` (STOP HERE)
 - If NO → Continue to STEP 2
 
 **STEP 2: Is the profile incomplete AND does the message contain extractable personal/financial data?**
@@ -34,15 +35,17 @@ greeting, payload, generate, regenerate, update, or qa.
 - If profile incomplete but NO extractable data → Continue to STEP 3 (treat as casual conversation)
 - If profile is complete → Continue to STEP 3
 
-**STEP 3: For complete profiles, check if user provides NEW VALUE for any core variable**
-- Profile complete = ALL fields have values (no None/null)
-- Core variables: zipcode, age, number_of_people, has_house, salary, is_net_salary, past_credit_debt, student_loan, other_debt
-- IMPORTANT: Must have an ACTUAL VALUE or CLEAR CHANGE, not just mention the variable
-- Examples that trigger regenerate: "I'm 30 now" (has value 30), "my salary is 50000" (has value 50000), "I moved to zipcode 10001" (has value 10001), "we are 3 people now" (has value 3)
+**STEP 3: Is the profile complete AND is user changing a core variable?**
+- Profile complete = ALL 9 core fields have values (no None/null): zipcode, age, number_of_people, has_house, salary, is_net_salary, past_credit_debt, student_loan, other_debt
+- CRITICAL: If ANY field is None → Profile is INCOMPLETE → Continue to STEP 4 (STOP HERE)
+- If profile is INCOMPLETE → NEVER output `regenerate` or `update` → Continue to STEP 4
+
+For COMPLETE profiles only:
+- Check if user provides NEW VALUE for any core variable (not just mentions it)
+- Examples that trigger regenerate: "I'm 30 now" (has value 30), "my salary is 50000" (has value 50000), "I moved to zipcode 10001" (has value 10001)
 - Examples that do NOT trigger regenerate: "well my salary is" (no value), "my age changed" (no new value), "I moved" (no location)
-- If profile complete AND message provides NEW VALUE for core variable → Output: `regenerate` (STOP HERE)
-- If profile complete but only mentions variable WITHOUT value → Continue to STEP 4
-- If profile complete but NO core variable mentioned → Continue to STEP 4
+- If profile COMPLETE AND message provides NEW VALUE for core variable → Output: `regenerate` (STOP HERE)
+- If profile COMPLETE but no new value provided → Continue to STEP 4
 
 **STEP 4: What does the user want?**
 Check in this order:
@@ -50,19 +53,25 @@ Check in this order:
 **A) User wants to create/generate a budget?**
 - Keywords: "generate", "create", "show me", "let's go", "make", "build", "yes" (when agreeing to create budget)
 - Examples: "Generate my budget", "Create a budget for me", "Show me my budget", "Yes, let's do it"
-- If YES → Output: `generate` (STOP HERE)
+- CRITICAL: Profile MUST be complete (all fields filled) to generate budget
+- If profile is INCOMPLETE → Output: `payload` (collect missing data first, STOP HERE)
+- If profile is COMPLETE and user wants to generate → Output: `generate` (STOP HERE)
 
-**B) User is changing CORE profile variables?**
+**B) User is changing CORE profile variables? (ONLY for COMPLETE profiles)**
+- CRITICAL: This ONLY applies if profile is COMPLETE (all 9 fields filled)
+- If profile is INCOMPLETE → Output: `payload` (collect missing data first, STOP HERE)
 - Core variables: zipcode, age, number_of_people, has_house, salary, is_net_salary, past_credit_debt, student_loan, other_debt
 - Context: User mentions changing, updating, or modifying any of these core fields
 - Examples: "I moved to zipcode 10001", "I got a raise", "I paid off my student loan", "We have a new baby"
-- If YES → Output: `regenerate` (STOP HERE)
+- If profile COMPLETE and YES → Output: `regenerate` (STOP HERE)
 
-**C) User is changing non-core spending/lifestyle expenses?**
+**C) User is changing non-core spending/lifestyle expenses? (ONLY for COMPLETE profiles)**
+- CRITICAL: This ONLY applies if profile is COMPLETE (all 9 fields filled) AND budget has been generated
+- If profile is INCOMPLETE → Output: `payload` (collect missing data first, STOP HERE)
 - Non-core expenses: car payments, dining, entertainment, groceries, utilities, subscriptions, travel, shopping, etc.
 - Context: User wants to adjust budget categories that are NOT core profile variables
 - Examples: "Reduce my dining budget", "I don't have car payments anymore", "Increase entertainment spending"
-- If YES → Output: `update` (STOP HERE)
+- If profile COMPLETE and YES → Output: `update` (STOP HERE)
 
 **D) User is asking a general question or seeking advice?**
 - Examples: "What is the 50/30/20 rule?", "How should I save?", "Tell me about investing", "What is SPENDiD?", "How can I improve my credit?", "What are good budgeting tips?"
