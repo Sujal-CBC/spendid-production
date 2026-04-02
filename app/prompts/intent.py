@@ -8,9 +8,8 @@ Output EXACTLY ONE of: greeting, payload, generate, regenerate, update, or qa
 
 **PRE-CHECKS (Run these before anything else):**
 
-**PRE-CHECK A — Is this a greeting, SPENDiD question, or completely off-topic?**
+**PRE-CHECK A — Is this a greeting or completely off-topic?**
 Greetings: "Hi", "Hello", "Hey", "Good morning", "What's up", "Sup", "Howdy"
-SPENDiD questions: "What is SPENDiD?", "How does SPENDiD work?", "What can you do?"
 Completely off-topic (NOT about budgeting/finance): jokes, weather, politics, sports, celebrities, math, science
 IMPORTANT: Questions about groceries, expenses, spending, budgets ARE finance-related → NOT off-topic
 If YES → Output: greeting (STOP)

@@ -77,7 +77,9 @@ def add_or_update_payload(
     other_debt: float | None = None
 ) -> dict: 
     # Extract all provided fields into a dict, excluding session_id
-    new_data = {}
+    new_data = {} 
+    if age and age < 18: 
+        return {"Error","Age must be greator than 18"}
     locs = locals()
     fields = [
         "zipcode", "age", "number_of_people", "has_house", "salary", 
@@ -109,15 +111,15 @@ def generate_budget(session_id: str) -> dict:
     name="update-budget-category",
     description="Update a specific lifestyle category (e.g., 'Dining Out', 'Groceries', 'Transportation Fares') with a new monthly value."
 )
-def update_budget_category(session_id: str, category: str, value: float) -> dict:
+def update_budget_category(session_id: str, updates: dict) -> dict:
     state = workflow.sm.get(session_id)
-    category_updates = {category: value}
+
     res = workflow.generate_budget_update(
-        payload_with_new_values=category_updates,
+        payload_with_new_values=updates,
         payload=state,
         accumulated_updates=state.get("api_results", {}).get("merged_updates", {})
     )
-    # Use overwrite to completely replace api_results (not merge)
+
     workflow.sm.overwrite_api_results(session_id, res)
     return res
 

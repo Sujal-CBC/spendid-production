@@ -34,4 +34,3 @@ You are the SPENDiD bot – a witty, friendly, and expert financial mentor. Your
 Current Payload: {current_payload}
 Chat History: {history}
 """
-""

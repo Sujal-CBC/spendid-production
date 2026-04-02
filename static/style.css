@@ -1131,6 +1131,66 @@ body {
     color: var(--accent-emerald);
     font-size: 1.125rem;
 }
+.card {
+    width: 320px;
+    background: #1e1e2f;
+    border-radius: 16px;
+    padding: 16px;
+    color: white;
+    font-family: sans-serif;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.card-icon {
+    margin-right: 10px;
+}
+
+/* ✅ SCROLLABLE LIST (ONLY 4 ITEMS VISIBLE) */
+.category-list {
+    max-height: 240px; /* ~4 items */
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+/* Scrollbar styling */
+.category-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+/* Category item */
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px;
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 /* ============================================
    Responsive Design

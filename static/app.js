@@ -439,12 +439,33 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const transformed = budgetSource.transformed;
             const topCategories = [
-                { key: 'Rent or Mortgage Payment', icon: 'fa-house' },
-                { key: 'Groceries', icon: 'fa-basket-shopping' },
-                { key: 'Dining Out', icon: 'fa-utensils' },
-                { key: 'Car Payments', icon: 'fa-car' },
-                { key: 'Education', icon: 'fa-graduation-cap' }
-            ];
+                    { key: 'Rent or Mortgage Payment', icon: 'fa-house' },
+                    { key: 'Car Payments', icon: 'fa-car' },
+                    { key: 'Other Debt Payments & Obligations', icon: 'fa-credit-card' },
+                    { key: 'Health Insurance', icon: 'fa-heart-pulse' },
+                    { key: 'Amount to Savings Each Period', icon: 'fa-piggy-bank' },
+                    { key: 'Life & Other Personal Insurance', icon: 'fa-shield' },
+                    { key: 'Charitable Giving', icon: 'fa-hand-holding-heart' },
+                    { key: 'Miscellaneous', icon: 'fa-box' },
+                    { key: 'Education', icon: 'fa-graduation-cap' },
+                    { key: 'Personal Care Products and Services', icon: 'fa-spa' },
+                    { key: 'Fun & Hobbies', icon: 'fa-gamepad' },
+                    { key: 'Pets or Children', icon: 'fa-paw' },
+                    { key: 'Cable / Internet / Streaming', icon: 'fa-wifi' },
+                    { key: 'Medical Spending', icon: 'fa-notes-medical' },
+                    { key: 'Transportation Fares', icon: 'fa-bus' },
+                    { key: 'Car Insurance', icon: 'fa-car-burst' },
+                    { key: 'Car Maintenance', icon: 'fa-screwdriver-wrench' },
+                    { key: 'Gasoline & EV-Charging', icon: 'fa-gas-pump' },
+                    { key: 'Clothing & Jewelry', icon: 'fa-shirt' },
+                    { key: 'Home Maintenance, Appliances, & Furniture', icon: 'fa-couch' },
+                    { key: 'Vacations & Trips', icon: 'fa-plane' },
+                    { key: 'Utilities - Other', icon: 'fa-bolt' },
+                    { key: 'Phone Services', icon: 'fa-mobile-screen' },
+                    { key: 'Utilities - Power Bill', icon: 'fa-lightbulb' },
+                    { key: 'Groceries', icon: 'fa-basket-shopping' },
+                    { key: 'Dining Out', icon: 'fa-utensils' }
+                ];
             
             // Get existing items
             const existingItems = {};
@@ -455,7 +476,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             topCategories.forEach((cat, index) => {
                 if (transformed[cat.key] !== undefined) {
-                    const newValue = `$${Number(transformed[cat.key]).toLocaleString()}`;
+                    const value = transformed[cat.key] ?? 0;
+                    const newValue = `$${Number(value).toLocaleString()}`;
+                    //const newValue = `$${Number(transformed[cat.key]).toLocaleString()}`;
                     
                     if (existingItems[cat.key]) {
                         // Update existing item
