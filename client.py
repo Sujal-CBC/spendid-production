@@ -56,7 +56,7 @@ async def main_streaming(user_text: str, session_id: str):
     intent = intent_res.choices[0].message.content.strip().lower() 
     print(f"User text : {user_text}")
     print(f"Intent: {intent}") # current intent   
-    print(f"Current history : ",history_str)
+    # print(f"Current history : ",history_str)
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as mcp_session:
@@ -119,20 +119,19 @@ async def main_streaming(user_text: str, session_id: str):
             )
             
             msg = response.choices[0].message 
-            # print("Message for payload : ",msg)
+            print("Message for payload : ",msg)
             if msg.tool_calls:
                 tool_call = msg.tool_calls[0]
                 args = json.loads(tool_call.function.arguments)
                 tool_name = tool_call.function.name
                 args['session_id'] = session_id
-                
+                print("-----------------------\n",tool_name,"---args--",args,"-------------\n")
                 # Special handling for location verification 
                 verify_loc = None
                 if tool_name == "verify-zipcode-or-city-name":
                     args["session_id"] = session_id 
                     content = await mcp_session.call_tool(tool_name, arguments=args) 
                     verify_loc = json.loads(content.content[0].text)  
-                    print("Verify data = ",verify_loc)
                 tool_res = await mcp_session.call_tool(tool_name, arguments=args)
                 data = json.loads(tool_res.content[0].text)
                 if "api_results" in data:
@@ -148,9 +147,9 @@ async def main_streaming(user_text: str, session_id: str):
                     
                     format_response = UPDATE_RESPONSE_PROMPT.format(
                         state=updated_state, api_results=updated_state.get("api_results", {}),
-                        history=history_str
+                        history=history_str,update=msg,user_message=user_text
                     ) 
-                    stream = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": format_response}], stream=True)
+                    stream = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": format_response}],temperature=0.9, stream=True)
                     
                 elif intent == "regenerate": 
                     updated_state = sm.get(session_id)
@@ -159,9 +158,9 @@ async def main_streaming(user_text: str, session_id: str):
                     
                     format_response = REGENERATE_RESPONSE_PROMPT.format(
                         state=updated_state, api_results=updated_state.get("api_results", {}),
-                        history=history_str
+                        history=history_str,update=msg,user_message=user_text
                     ) 
-                    stream = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": format_response}], stream=True)
+                    stream = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": format_response}],temperature=0.9, stream=True)
                     
                 else:
                     updated_state = sm.get(session_id)
@@ -180,11 +179,11 @@ async def main_streaming(user_text: str, session_id: str):
                     else:
                         # Still collecting data
                         # print(verify_loc) 
-                        format_response = RESPONSE_PROMPT.format(
+                        format_response = RESPONSE_PROMPT.format( 
                             state=updated_state, api_results=updated_state.get("api_results", {}),
                             next_fields=next_fields, history=history_str, data=verify_loc
                         ) 
-                    stream = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": format_response}], stream=True)
+                    stream = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": format_response}],temperature=0.9, stream=True)
                     
                 print(f"Current payload : {sm.get(session_id)}")
 
