@@ -54,7 +54,13 @@ def verify_location(session_id : str, city_or_zip : str | int) -> dict:
         "zipcode" : plann['zip_code']
     } 
     sm.update(session_id,params) 
+    print({
+        "valid" : "valid",
+        "location": plann["area_name"],
+        "zip_code": plann["zip_code"]
+    },"ppppp")
     return {
+        "valid" : "valid",
         "location": plann["area_name"],
         "zip_code": plann["zip_code"]
     }
@@ -79,7 +85,9 @@ def add_or_update_payload(
     # Extract all provided fields into a dict, excluding session_id
     new_data = {} 
     if age is not None and (age < 18 or age > 120):
-        return {"error": True, "message": "Age must be between 18 and 120."}
+        return {"error": True, "message": "Age must be between 18 and 120."} 
+    if number_of_people is not None and number_of_people not in range(1,6): 
+        return {"error":True, "message":"Number of people must be between 1 to 5"}
     locs = locals()
     fields = [
         "zipcode", "age", "number_of_people", "has_house", "salary", 
@@ -109,7 +117,7 @@ def generate_budget(session_id: str) -> dict:
 # for updating specific lifestyle expenses
 @mcp.tool(
     name="update-budget-category",
-    description="Update a specific lifestyle category (e.g., 'Dining Out', 'Groceries', 'Transportation Fares') with a new monthly value."
+    description="Update a specific lifestyle category (e.g., 'Dining Out', 'Groceries', 'Car Payments', 'Transportation Fares') with a new monthly value."
 )
 def update_budget_category(session_id: str, updates: dict) -> dict:
     state = workflow.sm.get(session_id)
