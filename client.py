@@ -120,37 +120,51 @@ async def main_streaming(user_text: str, session_id: str):
             
             msg = response.choices[0].message 
             print("Message for payload : ",msg)
-            tool_call = msg.tool_calls[0]
             if msg.tool_calls:
-                if intent in ["update","regenerate"]: 
-                    updates = {}
-                    for tool_call in msg.tool_calls:
-                        args = json.loads(tool_call.function.arguments or "{}")
-                        category = args.get("category")
-                        amount = args.get("amount")
-                        if category and amount:
-                            updates[category] = amount 
-                        args = {
-                        "updates": updates
-                        }  
-
-                else: 
-                    args = json.loads(tool_call.function.arguments)
-                args['session_id'] = session_id
-                tool_name = tool_call.function.name
-                print("-----------------------\n",tool_name,"---args--",args,"-------------\n")
-                # Special handling for location verification 
+                first_tool_call = msg.tool_calls[0]
+                tool_name = first_tool_call.function.name
                 verify_loc = None
-                if tool_name == "verify-zipcode-or-city-name":
-                    args["session_id"] = session_id 
-                    content = await mcp_session.call_tool(tool_name, arguments=args) 
-                    verify_loc = json.loads(content.content[0].text)   
-                tool_res = await mcp_session.call_tool(tool_name, arguments=args)
-                data = json.loads(tool_res.content[0].text)
-                if "api_results" in data:
-                    sm.overwrite_api_results(session_id, data["api_results"])
-                elif "budget_data" in data:
-                    sm.overwrite_api_results(session_id, data)
+                
+                if tool_name == "update-budget-category":
+                    updates = {}
+                    for tc in msg.tool_calls:
+                        if tc.function.name == "update-budget-category":
+                            tc_args = json.loads(tc.function.arguments or "{}")
+                            if "updates" in tc_args and isinstance(tc_args["updates"], dict):
+                                updates.update(tc_args["updates"])
+                            category = tc_args.get("category") or tc_args.get("category_name")
+                            amount = tc_args.get("amount") if tc_args.get("amount") is not None else tc_args.get("value")
+                            if category and amount is not None:
+                                updates[category] = amount 
+                    args = {"updates": updates}
+                    args['session_id'] = session_id
+                    print("-----------------------\n",tool_name,"---args--",args,"\n -------------\n")
+                    
+                    tool_res = await mcp_session.call_tool(tool_name, arguments=args)
+                    data = json.loads(tool_res.content[0].text)
+                    if "api_results" in data:
+                        sm.overwrite_api_results(session_id, data["api_results"])
+                    elif "budget_data" in data:
+                        sm.overwrite_api_results(session_id, data)
+                else: 
+                    # Execute all tool calls sequentially
+                    for tc in msg.tool_calls:
+                        tc_name = tc.function.name
+                        tc_args = json.loads(tc.function.arguments or "{}")
+                        tc_args['session_id'] = session_id
+                        print("-----------------------\n",tc_name,"---args--",tc_args,"\n -------------\n")
+                        
+                        verify_loc = None
+                        if tc_name == "verify-zipcode-or-city-name":
+                            content = await mcp_session.call_tool(tc_name, arguments=tc_args) 
+                            verify_loc = json.loads(content.content[0].text)   
+                            
+                        tool_res = await mcp_session.call_tool(tc_name, arguments=tc_args)
+                        data = json.loads(tool_res.content[0].text)
+                        if "api_results" in data:
+                            sm.overwrite_api_results(session_id, data["api_results"])
+                        elif "budget_data" in data:
+                            sm.overwrite_api_results(session_id, data)
                 # print("data = ",data)
                 # print("Intent after the toool call : ",intent) 
                 if intent == "update": 
@@ -194,8 +208,9 @@ async def main_streaming(user_text: str, session_id: str):
                         print(verify_loc,"--------------")
                         format_response = RESPONSE_PROMPT.format(
                             state=updated_state, api_results=updated_state.get("api_results", {}),
-                            next_fields=next_fields, history=history_str,location=verify_loc
+                            next_fields=next_fields, history=history_str,location=verify_loc,user_message=user_text
                         ) 
+                        print("Here is formatted response ->  \n",format_response,"\n----------------------------")
                     stream = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": format_response}],temperature=0.9, stream=True)
                     
                 print(f"Current payload : {sm.get(session_id)}")

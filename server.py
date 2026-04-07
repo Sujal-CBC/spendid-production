@@ -78,8 +78,8 @@ def add_or_update_payload(
 ) -> dict: 
     # Extract all provided fields into a dict, excluding session_id
     new_data = {} 
-    if age and age < 18: 
-        return {"Error","Age must be greator than 18"}
+    if age is not None and (age < 18 or age > 120):
+        return {"error": True, "message": "Age must be between 18 and 120."}
     locs = locals()
     fields = [
         "zipcode", "age", "number_of_people", "has_house", "salary", 
